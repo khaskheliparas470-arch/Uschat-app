@@ -1,0 +1,6 @@
+{
+  "name": "UsChat",
+  "description": "End-to-end encrypted private messaging and group chat platform inspired by WhatsApp, featuring AES-256-GCM encryption, group chats, voice notes, media sharing, and security code verification.",
+  "requestFramePermissions": ["camera", "microphone"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
