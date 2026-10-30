@@ -28,6 +28,7 @@
   background: rgba(148, 163, 184, 0.55);
 }
 
+/* Custom Chat Bubble Tails */
 .chat-bubble-tail-outgoing {
   clip-path: polygon(0 0, 100% 0, 0 100%);
 }
