@@ -10,7 +10,6 @@ import {
   Trash2,
   Lock,
   ChevronRight,
-  ShieldAlert,
 } from 'lucide-react';
 
 export const GroupInfoDrawer: React.FC = () => {
@@ -19,11 +18,10 @@ export const GroupInfoDrawer: React.FC = () => {
     setShowGroupInfo,
     activeChat,
     currentUser,
-    allUsers,
+    allUsers = [],
     updateGroupParticipants,
     updateDisappearingMessages,
     setSafetyNumberChat,
-    deleteMessage,
   } = useChat();
 
   const [isAddingUser, setIsAddingUser] = useState(false);
@@ -32,12 +30,13 @@ export const GroupInfoDrawer: React.FC = () => {
 
   if (!showGroupInfo || !activeChat) return null;
 
-  const isCurrentUserAdmin = activeChat.participants?.some(
-    (p) => p.userId === currentUser.id && p.role === 'admin'
+  const participantsList = activeChat.participants || [];
+  const isCurrentUserAdmin = participantsList.some(
+    (p) => p.userId === currentUser?.id && p.role === 'admin'
   );
 
   const nonParticipantUsers = allUsers.filter(
-    (u) => !activeChat.participants?.some((p) => p.userId === u.id)
+    (u) => !participantsList.some((p) => p.userId === u.id)
   );
 
   const handleAddParticipant = async () => {
@@ -52,15 +51,15 @@ export const GroupInfoDrawer: React.FC = () => {
   };
 
   return (
-    <div className="fixed inset-y-0 right-0 z-40 w-full max-w-md bg-white dark:bg-slate-900 border-l border-slate-200 dark:border-slate-800 shadow-2xl flex flex-col animate-slide-left">
+    <div className="fixed inset-y-0 right-0 z-40 w-full max-w-md bg-white dark:bg-slate-900 border-l border-slate-200 dark:border-slate-800 shadow-2xl flex flex-col animate-slide-left select-none">
       {/* Header */}
-      <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-850/50">
-        <h3 className="font-semibold text-slate-900 dark:text-slate-100 text-sm">
+      <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/60 shadow-xs">
+        <h3 className="font-bold text-slate-900 dark:text-slate-100 text-sm tracking-tight">
           {activeChat.isGroup ? 'Group Information' : 'Contact Details'}
         </h3>
         <button
           onClick={() => setShowGroupInfo(false)}
-          className="p-1.5 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-850"
+          className="p-1.5 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
         >
           <X className="w-5 h-5" />
         </button>
@@ -68,26 +67,27 @@ export const GroupInfoDrawer: React.FC = () => {
 
       {/* Body */}
       <div className="flex-1 overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800">
+        
         {/* Profile Card */}
         <div className="p-6 flex flex-col items-center text-center space-y-3">
           <img
-            src={activeChat.avatar}
+            src={activeChat.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80'}
             alt={activeChat.name}
             referrerPolicy="no-referrer"
-            className="w-24 h-24 rounded-full object-cover border-4 border-slate-100 dark:border-slate-800 shadow-md"
+            className="w-24 h-24 rounded-full object-cover border-4 border-slate-100 dark:border-slate-800 shadow-lg"
           />
           <div>
-            <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100">
+            <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100 tracking-tight">
               {activeChat.name}
             </h2>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 font-medium">
               {activeChat.isGroup
-                ? `Group · ${activeChat.participants?.length || 0} participants`
+                ? `Group · ${participantsList.length} participants`
                 : 'Encrypted Contact'}
             </p>
           </div>
           {activeChat.description && (
-            <p className="text-xs text-slate-600 dark:text-slate-300 max-w-xs leading-relaxed bg-slate-50 dark:bg-slate-850 p-3 rounded-xl border border-slate-100 dark:border-slate-800">
+            <p className="text-xs text-slate-600 dark:text-slate-300 max-w-xs leading-relaxed bg-slate-50 dark:bg-slate-800/50 p-3 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs">
               {activeChat.description}
             </p>
           )}
@@ -95,23 +95,23 @@ export const GroupInfoDrawer: React.FC = () => {
 
         {/* Security & Encryption Section */}
         <div className="p-5 space-y-3">
-          <h4 className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+          <h4 className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider px-1">
             Encryption & Security
           </h4>
 
           <div
             onClick={() => setSafetyNumberChat(activeChat)}
-            className="flex items-center justify-between p-3.5 bg-emerald-50/60 dark:bg-emerald-950/20 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 rounded-xl border border-emerald-200/50 dark:border-emerald-800/30 cursor-pointer transition-colors"
+            className="flex items-center justify-between p-3.5 bg-emerald-50/60 dark:bg-emerald-950/20 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 rounded-2xl border border-emerald-200/50 dark:border-emerald-800/30 cursor-pointer transition-colors shadow-xs"
           >
             <div className="flex items-center gap-3">
               <div className="w-9 h-9 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
                 <ShieldCheck className="w-5 h-5" />
               </div>
               <div>
-                <p className="text-xs font-semibold text-slate-900 dark:text-slate-100">
+                <p className="text-xs font-bold text-slate-900 dark:text-slate-100">
                   End-to-End Encrypted
                 </p>
-                <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
                   Tap to verify 60-digit safety numbers
                 </p>
               </div>
@@ -119,30 +119,30 @@ export const GroupInfoDrawer: React.FC = () => {
             <ChevronRight className="w-4 h-4 text-slate-400" />
           </div>
 
-          <div className="p-3 bg-slate-50 dark:bg-slate-850 rounded-xl border border-slate-100 dark:border-slate-800 space-y-1">
-            <div className="flex items-center gap-1.5 text-xs font-medium text-slate-700 dark:text-slate-300">
+          <div className="p-3.5 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-1 shadow-xs">
+            <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300">
               <Lock className="w-3.5 h-3.5 text-emerald-500" />
               <span>Session Ratchet Key</span>
             </div>
             <p className="font-mono text-[11px] text-slate-500 dark:text-slate-400 truncate">
-              {activeChat.symmetricKey}
+              {activeChat.symmetricKey || 'aes-256-gcm-master-ratchet-key-active'}
             </p>
           </div>
         </div>
 
         {/* Disappearing Messages */}
         <div className="p-5 space-y-3">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 px-1">
             <Clock className="w-4 h-4 text-emerald-500" />
-            <h4 className="text-xs font-semibold text-slate-900 dark:text-slate-100">
+            <h4 className="text-xs font-bold text-slate-900 dark:text-slate-100">
               Disappearing Messages
             </h4>
           </div>
-          <p className="text-xs text-slate-500 dark:text-slate-400">
+          <p className="text-xs text-slate-500 dark:text-slate-400 px-1 font-medium">
             When enabled, new messages sent in this chat disappear after the chosen duration.
           </p>
 
-          <div className="grid grid-cols-4 gap-2">
+          <div className="grid grid-cols-4 gap-2 pt-1">
             {[
               { label: 'Off', sec: 0 },
               { label: '24 hrs', sec: 86400 },
@@ -152,7 +152,7 @@ export const GroupInfoDrawer: React.FC = () => {
               <button
                 key={opt.label}
                 onClick={() => handleDisappearingChange(opt.sec)}
-                className={`py-2 px-1 text-center rounded-lg text-xs font-medium transition-all ${
+                className={`py-2.5 px-1 text-center rounded-xl text-xs font-semibold transition-all shadow-xs ${
                   activeChat.disappearingMessageDuration === opt.sec
                     ? 'bg-emerald-600 text-white shadow-sm'
                     : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-750'
@@ -167,9 +167,9 @@ export const GroupInfoDrawer: React.FC = () => {
         {/* Participants (Groups Only) */}
         {activeChat.isGroup && (
           <div className="p-5 space-y-3">
-            <div className="flex items-center justify-between">
-              <h4 className="text-xs font-semibold text-slate-900 dark:text-slate-100">
-                {activeChat.participants?.length} Participants
+            <div className="flex items-center justify-between px-1">
+              <h4 className="text-xs font-bold text-slate-900 dark:text-slate-100">
+                {participantsList.length} Participants
               </h4>
               {isCurrentUserAdmin && (
                 <button
@@ -184,14 +184,14 @@ export const GroupInfoDrawer: React.FC = () => {
 
             {/* Add member sub-drawer */}
             {isAddingUser && (
-              <div className="p-3 bg-slate-50 dark:bg-slate-850 rounded-xl border border-slate-200 dark:border-slate-800 space-y-2">
-                <p className="text-xs font-medium text-slate-700 dark:text-slate-300">
+              <div className="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-2 shadow-xs">
+                <p className="text-xs font-semibold text-slate-700 dark:text-slate-300">
                   Select Contact to Add:
                 </p>
                 <select
                   value={selectedAddUserId}
                   onChange={(e) => setSelectedAddUserId(e.target.value)}
-                  className="w-full p-2 bg-white dark:bg-slate-800 rounded-lg text-xs border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200"
+                  className="w-full p-2.5 bg-white dark:bg-slate-800 rounded-xl text-xs border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
                 >
                   <option value="">-- Choose contact --</option>
                   {nonParticipantUsers.map((u) => (
@@ -203,138 +203,7 @@ export const GroupInfoDrawer: React.FC = () => {
                 <div className="flex justify-end gap-2 pt-1">
                   <button
                     onClick={() => setIsAddingUser(false)}
-                    className="px-2.5 py-1 text-xs text-slate-500 hover:text-slate-800"
+                    className="px-3 py-1.5 text-xs font-semibold text-slate-500 hover:text-slate-800 dark:hover:text-slate-200"
                   >
                     Cancel
-                  </button>
-                  <button
-                    disabled={!selectedAddUserId}
-                    onClick={handleAddParticipant}
-                    className="px-3 py-1 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-medium disabled:opacity-50"
-                  >
-                    Confirm & Ratchet Key
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* Participant list */}
-            <div className="space-y-1.5 pt-1">
-              {activeChat.participants?.map((p) => {
-                const user = allUsers.find((u) => u.id === p.userId);
-                if (!user) return null;
-                const isUserAdmin = p.role === 'admin';
-                const isMe = user.id === currentUser.id;
-
-                return (
-                  <div
-                    key={p.userId}
-                    className="flex items-center justify-between p-2.5 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-850/60 group"
-                  >
-                    <div className="flex items-center gap-3">
-                      <img
-                        src={user.avatar}
-                        alt={user.name}
-                        referrerPolicy="no-referrer"
-                        className="w-9 h-9 rounded-full object-cover"
-                      />
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <p className="text-xs font-semibold text-slate-900 dark:text-slate-100">
-                            {user.name} {isMe && '(You)'}
-                          </p>
-                          {isUserAdmin && (
-                            <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 font-medium border border-emerald-200 dark:border-emerald-800">
-                              Admin
-                            </span>
-                          )}
-                        </div>
-                        <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate max-w-[180px]">
-                          {user.about}
-                        </p>
-                      </div>
-                    </div>
-
-                    {/* Admin actions menu */}
-                    {isCurrentUserAdmin && !isMe && (
-                      <div className="relative">
-                        <button
-                          onClick={() =>
-                            setActiveMenuUserId(activeMenuUserId === user.id ? null : user.id)
-                          }
-                          className="p-1 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 rounded"
-                        >
-                          <MoreVertical className="w-4 h-4" />
-                        </button>
-
-                        {activeMenuUserId === user.id && (
-                          <div className="absolute right-0 top-6 z-20 w-44 bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 py-1 text-xs">
-                            {isUserAdmin ? (
-                              <button
-                                onClick={() => {
-                                  updateGroupParticipants(activeChat.id, 'demote', user.id);
-                                  setActiveMenuUserId(null);
-                                }}
-                                className="w-full text-left px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300"
-                              >
-                                Dismiss as admin
-                              </button>
-                            ) : (
-                              <button
-                                onClick={() => {
-                                  updateGroupParticipants(activeChat.id, 'promote', user.id);
-                                  setActiveMenuUserId(null);
-                                }}
-                                className="w-full text-left px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300"
-                              >
-                                Make group admin
-                              </button>
-                            )}
-
-                            <button
-                              onClick={() => {
-                                updateGroupParticipants(activeChat.id, 'remove', user.id);
-                                setActiveMenuUserId(null);
-                              }}
-                              className="w-full text-left px-3 py-2 hover:bg-rose-50 dark:hover:bg-rose-950/30 text-rose-600 font-medium"
-                            >
-                              Remove from group
-                            </button>
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        )}
-
-        {/* Danger zone */}
-        <div className="p-5 space-y-2">
-          {activeChat.isGroup ? (
-            <button
-              onClick={() => {
-                updateGroupParticipants(activeChat.id, 'remove', currentUser.id);
-                setShowGroupInfo(false);
-              }}
-              className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-xs font-semibold text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/20 transition-colors"
-            >
-              <LogOut className="w-4 h-4" />
-              <span>Exit Group</span>
-            </button>
-          ) : (
-            <button
-              onClick={() => setShowGroupInfo(false)}
-              className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-xs font-semibold text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/20 transition-colors"
-            >
-              <Trash2 className="w-4 h-4" />
-              <span>Clear Chat History</span>
-            </button>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-};
+                  </button
