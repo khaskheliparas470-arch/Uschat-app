@@ -108,7 +108,6 @@ interface ChatContextType {
   showNewGroupModal: boolean;
   setShowNewGroupModal: (val: boolean) => void;
 
-  // WebRTC calling
   activeCall: ActiveCallData | null;
   startCall: (chat: Chat, type: 'audio' | 'video') => Promise<void>;
   endCall: () => void;
@@ -132,12 +131,9 @@ const ChatContext = createContext<ChatContextType | undefined>(undefined);
 
 const STORAGE_KEY_PREFIX = 'uschat_data_v1';
 
-// Replace this with your deployed Socket.IO server URL before deployment.
 const SIGNALING_SERVER_URL =
   import.meta.env.VITE_SIGNALING_SERVER_URL || 'http://localhost:4000';
 
-// Public STUN server for initial testing.
-// A TURN server is also needed for reliable connections across many networks.
 const RTC_CONFIGURATION: RTCConfiguration = {
   iceServers: [
     {
@@ -260,15 +256,12 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({
     useState<IncomingCallData | null>(null);
 
   const socketRef = useRef<Socket | null>(null);
-
   const peerConnectionRef = useRef<RTCPeerConnection | null>(null);
+  const localStreamRef = useRef<MediaStream | null>(null);
 
   const pendingIceCandidatesRef = useRef<RTCIceCandidateInit[]>([]);
-
   const callPeerIdRef = useRef<string | null>(null);
-
   const incomingCallRef = useRef<IncomingCallData | null>(null);
-
   const activeCallRef = useRef<ActiveCallData | null>(null);
 
   const chatsRef = useRef(chats);
@@ -339,8 +332,9 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({
       peerConnectionRef.current = null;
     }
 
-    if (localStream) {
-      localStream.getTracks().forEach((track) => track.stop());
+    if (localStreamRef.current) {
+      localStreamRef.current.getTracks().forEach((track) => track.stop());
+      localStreamRef.current = null;
     }
 
     setLocalStream(null);
@@ -352,7 +346,7 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({
     callPeerIdRef.current = null;
     incomingCallRef.current = null;
     activeCallRef.current = null;
-  }, [localStream]);
+  }, []);
 
   // Create a WebRTC peer connection
   const createPeerConnection = useCallback((peerId: string) => {
@@ -391,14 +385,13 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({
     return peerConnection;
   }, []);
 
-  // Add ICE candidates that arrived before remote description
+  // Add queued ICE candidates
   const flushPendingIceCandidates = useCallback(async () => {
     const peerConnection = peerConnectionRef.current;
 
     if (!peerConnection?.remoteDescription) return;
 
     const candidates = [...pendingIceCandidatesRef.current];
-
     pendingIceCandidatesRef.current = [];
 
     for (const candidate of candidates) {
@@ -429,18 +422,15 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({
       console.log('Registered calling user:', data.userId);
     });
 
-    socket.on(
-      'incoming-call',
-      (data: IncomingCallData) => {
-        if (activeCallRef.current || incomingCallRef.current) {
-          socket.emit('reject-call', { to: data.from });
-          return;
-        }
-
-        incomingCallRef.current = data;
-        setIncomingCall(data);
+    socket.on('incoming-call', (data: IncomingCallData) => {
+      if (activeCallRef.current || incomingCallRef.current) {
+        socket.emit('reject-call', { to: data.from });
+        return;
       }
-    );
+
+      incomingCallRef.current = data;
+      setIncomingCall(data);
+    });
 
     socket.on('call-answered', async (data) => {
       const peerConnection = peerConnectionRef.current;
@@ -1000,6 +990,7 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({
         video: type === 'video',
       });
 
+      localStreamRef.current = stream;
       setLocalStream(stream);
 
       setActiveCall({
@@ -1050,12 +1041,11 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({
         video: call.callType === 'video',
       });
 
+      localStreamRef.current = stream;
       setLocalStream(stream);
 
       const matchingChat = chatsRef.current.find(
-        (c) =>
-          !c.isGroup &&
-          c.otherUserId === call.from
+        (c) => !c.isGroup && c.otherUserId === call.from
       );
 
       const caller = usersRef.current.find(
@@ -1150,7 +1140,7 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({
         direction: 'outgoing',
         timestamp: Date.now(),
         duration: `${mins}:${secs.toString().padStart(2, '0')}`,
-        isEncrypted: true,
+        isEncrypted: false,
       };
 
       setCallLogs((prev) => [newLog, ...prev]);
