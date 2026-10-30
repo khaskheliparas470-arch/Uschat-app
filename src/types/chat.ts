@@ -9,6 +9,7 @@ export interface User {
   isOnline: boolean;
   lastSeen?: string;
   publicKeyFingerprint: string;
+  status?: 'available' | 'busy' | 'encrypted';
 }
 
 export interface Reaction {
@@ -51,6 +52,7 @@ export interface Message {
   isDisappearing?: boolean;
   expiresAt?: number;
   isDeletedForEveryone?: boolean;
+  readBy?: string[]; // Track who read the message in group chats
 }
 
 export interface GroupParticipant {
@@ -77,6 +79,7 @@ export interface Chat {
   createdAt: number;
   lastMessage?: Message;
   typingUsers?: string[];
+  pinnedMessageIds?: string[]; // Quick access to pinned important messages
 }
 
 export interface StatusStory {
@@ -102,4 +105,5 @@ export interface CallLog {
   timestamp: number;
   duration?: string;
   isEncrypted: boolean;
+  quality?: 'HD' | 'Standard' | 'Encrypted Signal Relay';
 }
