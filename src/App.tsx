@@ -10,7 +10,7 @@ import { EncryptionInspectorModal } from './components/EncryptionInspectorModal'
 import { CallScreenModal } from './components/CallScreenModal';
 import { NewGroupModal } from './components/NewGroupModal';
 import { NewChatModal } from './components/NewChatModal';
-import { ArrowLeft, Shield } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 
 const MainLayout: React.FC = () => {
   const {
@@ -20,28 +20,28 @@ const MainLayout: React.FC = () => {
   } = useChat();
 
   return (
-    <div className="flex h-screen w-screen overflow-hidden bg-slate-100 dark:bg-slate-950 font-sans text-slate-900 dark:text-slate-100 antialiased select-none">
-      {/* Sidebar: Visible on desktop, or mobile when no chat is open or when on status/calls tab */}
+    <div className="flex h-[100dvh] w-screen overflow-hidden bg-slate-950 font-sans text-slate-100 antialiased select-none">
+      {/* Sidebar: Visible on desktop, or mobile when no chat is active */}
       <div
         className={`${
           activeChatId && activeTab === 'chats' ? 'hidden md:flex' : 'flex'
-        } w-full md:w-auto h-full z-10 shrink-0`}
+        } w-full md:w-80 lg:w-96 h-full z-10 shrink-0 border-r border-slate-800 bg-slate-900/50 backdrop-blur-md`}
       >
         <Sidebar />
       </div>
 
-      {/* Main View Area: Either ChatArea, StatusView, or CallsView */}
+      {/* Main Content Area */}
       <div
         className={`${
           !activeChatId && activeTab === 'chats' ? 'hidden md:flex' : 'flex'
-        } flex-1 h-full flex-col relative overflow-hidden`}
+        } flex-1 h-full flex-col relative overflow-hidden bg-slate-950`}
       >
-        {/* Mobile top back bar if in active chat */}
+        {/* Mobile Back Button Bar for Active Chat */}
         {activeChatId && activeTab === 'chats' && (
-          <div className="md:hidden h-12 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 flex items-center px-3 z-30 shrink-0">
+          <div className="md:hidden h-14 bg-slate-900 border-b border-slate-800 flex items-center px-4 z-30 shrink-0">
             <button
               onClick={() => setActiveChatId(null)}
-              className="flex items-center gap-1.5 text-xs font-semibold text-emerald-600 dark:text-emerald-400 py-1 px-2 rounded-lg active:bg-slate-100 dark:active:bg-slate-800"
+              className="flex items-center gap-2 text-xs font-semibold text-emerald-400 py-1.5 px-3 rounded-lg bg-emerald-500/10 active:bg-emerald-500/20 transition-colors"
             >
               <ArrowLeft className="w-4 h-4" />
               <span>Back to Chats</span>
@@ -49,16 +49,18 @@ const MainLayout: React.FC = () => {
           </div>
         )}
 
-        {/* View Switcher */}
-        {activeTab === 'chats' && <ChatArea />}
-        {activeTab === 'status' && <StatusView />}
-        {activeTab === 'calls' && <CallsView />}
+        {/* Dynamic View Switcher */}
+        <div className="flex-1 flex flex-col h-full overflow-hidden relative">
+          {activeTab === 'chats' && <ChatArea />}
+          {activeTab === 'status' && <StatusView />}
+          {activeTab === 'calls' && <CallsView />}
+        </div>
 
-        {/* Side Panel Drawer for Group Info & Settings */}
+        {/* Side Panel Drawer */}
         <GroupInfoDrawer />
       </div>
 
-      {/* Global Modals */}
+      {/* Global Application Modals */}
       <SafetyNumberModal />
       <EncryptionInspectorModal />
       <CallScreenModal />
